@@ -14,6 +14,12 @@
 #include <learnopengl/camera.h>
 #include <learnopengl/model.h>
 
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
+
+
+
 #include <vector>
 #include <iostream>
 
@@ -96,6 +102,8 @@ std::vector<Cube*> cubes;
 
 float cubesSpeed = 1.5f;
 
+float xPandaPosition = 0.0f;
+
 int main() {
     // glfw: initialize and configure
     // ------------------------------
@@ -128,11 +136,17 @@ int main() {
 
     setUpLights();
 
+    /*Shaderi */
+
     Shader baseShader("resources/shaders/base.vs", "resources/shaders/base.fs");
     Shader lightShader ("resources/shaders/light.vs","resources/shaders/light.fs");
   //  Shader pointShader("resources/shaders/light.vs","resources/shaders/point.fs");
     Shader cubeShader ("resources/shaders/cube.vs","resources/shaders/cube.fs");
     Shader blendShader ("resources/shaders/blending.vs","resources/shaders/blending.fs");
+    Shader modelShader ("resources/shaders/model.vs","resources/shaders/model.fs");
+
+    /*Modeli*/
+    Model pandaModel("resources/objects/panda/scene.gltf");
 
     float planeVertices[] = {
             //positions - 3f                   //normals - 3f                      //texture coords - 2f
@@ -451,6 +465,23 @@ int main() {
             Cube* newPointCube = new Cube(true);
             cubes.push_back(newPointCube);
         }
+
+        /* Renderovanje modela */
+        modelShader.use();
+        glm::mat4 model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(xPandaPosition, 0.6f, 0.9f));
+        model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+
+        model = glm::scale(model, glm::vec3(0.007f));
+
+        modelShader.setMat4("projection", projection);
+        modelShader.setMat4("view", view);
+        modelShader.setMat4("model", model);
+        setUpShaderLights(modelShader);
+
+        pandaModel.Draw(modelShader);
+
 
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
