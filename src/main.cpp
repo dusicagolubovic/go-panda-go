@@ -132,6 +132,7 @@ int main() {
     Shader lightShader ("resources/shaders/light.vs","resources/shaders/light.fs");
   //  Shader pointShader("resources/shaders/light.vs","resources/shaders/point.fs");
     Shader cubeShader ("resources/shaders/cube.vs","resources/shaders/cube.fs");
+    Shader blendShader ("resources/shaders/blending.vs","resources/shaders/blending.fs");
 
     float planeVertices[] = {
             //positions - 3f                   //normals - 3f                      //texture coords - 2f
@@ -210,6 +211,17 @@ int main() {
 
     };
 
+    float transparentVertices[] = {
+            // positions         // texture Coords (swapped y coordinates because texture is flipped upside down)
+            0.0f,  0.5f,  0.0f,  0.0f,  0.0f,
+            0.0f, -0.5f,  0.0f,  0.0f,  1.0f,
+            1.0f, -0.5f,  0.0f,  1.0f,  1.0f,
+
+            0.0f,  0.5f,  0.0f,  0.0f,  0.0f,
+            1.0f, -0.5f,  0.0f,  1.0f,  1.0f,
+            1.0f,  0.5f,  0.0f,  1.0f,  0.0f
+    };
+
     /*Saljemo podatke o vertexima na graficku */
     unsigned int planeVAO, planeVBO, planeEBO;
 
@@ -267,19 +279,36 @@ int main() {
     glVertexAttribPointer(0,3,GL_FLOAT,GL_FALSE, 8*sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
+    unsigned int transparentVAO, transparentVBO;
+    glGenVertexArrays(1, &transparentVAO);
+    glGenBuffers(1, &transparentVBO);
+    glBindVertexArray(transparentVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, transparentVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(transparentVertices), transparentVertices, GL_STATIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+    glBindVertexArray(0);
+
     /* Generisanje teksture */
 
-    stbi_set_flip_vertically_on_load(true);
+    //stbi_set_flip_vertically_on_load(true);
 
     unsigned int planeTexture = loadTexture("resources/textures/grass2.jpg",true);
     unsigned int cubeTexture = loadTexture("resources/textures/brick.jpg",false);
+    unsigned int vegetationTexture = loadTexture("resources/textures/grass.png",false);
 
-    /* Pravimo kolekciju prepreka i */
+    /* Pravimo kolekciju prepreka i poena*/
 
     Cube* initialBrick = new Cube(false);
-   // Cube* initialPoint = new Cube(true);
+    Cube* initialPoint = new Cube(true);
     cubes.push_back(initialBrick);
-   // cubes.push_back(initialPoint);
+    cubes.push_back(initialPoint);
+
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     // render loop
     // -----------
@@ -346,12 +375,6 @@ int main() {
 
         setUpShaderLights(cubeShader);
 
-        /*glm::mat4 model = glm::mat4(1.0f);
-        model = glm::translate(model,glm::vec3(xPos,yPos,zPos));
-        model = glm::scale(model, glm::vec3(0.4f));
-        cubeShader.setMat4("model",model);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
-        */
 
         glEnable(GL_CULL_FACE);
         glFrontFace(GL_CW);
@@ -377,19 +400,53 @@ int main() {
             }
 
             glm::mat4 model = (*it)->translateCube(xPosition, 0.5f, zNewPosition);
-           // model = glm::scale(model, glm::vec3(0.3f));
+
             cubeShader.setMat4("model", model);
+            cubeShader.setBool("isPoint",(*it)->isPoint());
             glDrawArrays(GL_TRIANGLES, 0, 36);
             ++it;
 
         }
 
+        glDisable(GL_CULL_FACE);
+
+
+        /* Vegetacija */
+
+        glBindVertexArray(transparentVAO);
+
+        blendShader.use();
+        blendShader.setMat4("view",view);
+        blendShader.setMat4("projection",projection);
+        blendShader.setInt("texture1",0);
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, vegetationTexture);
+
+        setUpShaderLights(blendShader);
+
+        for(auto it = cubes.begin(); it != cubes.end(); it++ ) {
+            Cube* cube = *it;
+            if (!cube->isPoint()) {
+                float xPos = cube->getXCoord();
+                float yPos = cube->getYCoord();
+                float zPos = cube->getZCoord() + 0.2f;
+
+                glm::mat4 model = glm::mat4(1.0f);
+                model = glm::translate(model, glm::vec3(xPos - 0.4, yPos, zPos));
+                model = glm::scale(model, glm::vec3(0.6));
+                blendShader.setMat4("model", model);
+                glDrawArrays(GL_TRIANGLES, 0, 6);
+            }
+        }
+
         if(nearestZ > -5.0f) {
             Cube* newCube = new Cube(false);
             cubes.push_back(newCube);
+            Cube* newPointCube = new Cube(true);
+            cubes.push_back(newPointCube);
         }
 
-            glDisable(GL_CULL_FACE);
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         // -------------------------------------------------------------------------------
@@ -450,8 +507,6 @@ void setUpLights(){
 
 
     };
-
-
 
     spotLight.position = glm::vec3(0.0f,1.0f,9.0f);
     spotLight.direction = glm::vec3(0.2f, 0.7f, -3.0f);

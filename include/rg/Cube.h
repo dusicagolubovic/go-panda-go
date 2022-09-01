@@ -54,14 +54,17 @@ public:
     }
 
     glm::mat4 translateCube(float x,float y, float z) {
+
         m_xCoord = x;
         m_yCoord = y;
         m_zCoord = z;
 
+        float scaleFactor = isPoint() ? 0.1f: 0.3f;
         glm::mat4 model = glm::mat4(1.0f);
 
         model = glm::translate(model,glm::vec3(x,y,z));
-        model = glm::scale(model, glm::vec3(0.3f));
+
+        model = glm::scale(model, glm::vec3(scaleFactor));
 
 
         return model;

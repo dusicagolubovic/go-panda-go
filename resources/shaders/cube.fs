@@ -49,7 +49,7 @@ uniform DirLight dirLight;
 uniform PointLight pointLights[3];
 
 uniform sampler2D cubeTexture;
-//uniform bool isPoint;
+uniform bool isPoint;
 
 
 out vec4 FragColor;
@@ -61,16 +61,19 @@ vec3 calcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir);
 void main()
 {
     vec4 result;
+    if (isPoint) {
+     result = vec4(1.0,1.0,1.0,0.6);
+    }
+     else {
         vec3 normal = normalize(fs_in.Normal);
-            vec3 viewDir = normalize(viewPos - fs_in.FragPos.xyz);
-
-            vec3 result3 = calcDirLight(dirLight, normal, viewDir);
-            for(int i =  0; i < 3; ++i) {
-                  result3+= calcPointLight(pointLights[i],normal,fs_in.FragPos.xyz,viewDir);
-              }
-            result3 += calcSpotLight(spotLight, normal, fs_in.FragPos.xyz, viewDir);
-
-     result = vec4(result3,1.0);
+        vec3 viewDir = normalize(viewPos - fs_in.FragPos.xyz);
+        vec3 result3 = calcDirLight(dirLight, normal, viewDir);
+        for(int i =  0; i < 3; ++i) {
+            result3+= calcPointLight(pointLights[i],normal,fs_in.FragPos.xyz,viewDir);
+        }
+        result3 += calcSpotLight(spotLight, normal, fs_in.FragPos.xyz, viewDir);
+        result = vec4(result3,1.0);
+        }
     FragColor = result;
 }
 
