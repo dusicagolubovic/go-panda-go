@@ -497,7 +497,13 @@ int main() {
 }
 
 void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods){
+    if(key == GLFW_KEY_LEFT && action == GLFW_PRESS && xPandaPosition > -0.75f){
+        xPandaPosition -= 0.25f;
+    }
 
+    if(key == GLFW_KEY_RIGHT && action == GLFW_PRESS && xPandaPosition < 0.75f){
+        xPandaPosition += 0.25f;
+    }
 }
 
 // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
