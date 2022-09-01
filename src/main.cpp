@@ -298,6 +298,7 @@ int main() {
     unsigned int planeTexture = loadTexture("resources/textures/grass2.jpg",true);
     unsigned int cubeTexture = loadTexture("resources/textures/brick.jpg",false);
     unsigned int vegetationTexture = loadTexture("resources/textures/grass.png",false);
+    unsigned int goldTexture = loadTexture("resources/textures/gold.jpg",false);
 
     /* Pravimo kolekciju prepreka i poena*/
 
@@ -369,9 +370,13 @@ int main() {
         cubeShader.setMat4("projection", projection);
         cubeShader.setMat4("view", view);
         cubeShader.setInt("cubeTexture", 0);
+        cubeShader.setInt("goldTexture",1);
 
         glActiveTexture(GL_TEXTURE0);
-         glBindTexture(GL_TEXTURE_2D, cubeTexture);
+        glBindTexture(GL_TEXTURE_2D, cubeTexture);
+
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, goldTexture);
 
         setUpShaderLights(cubeShader);
 
@@ -534,7 +539,7 @@ void setUpLights(){
     }
 
     dirLight.direction = glm::vec3(0.0f, -10.0f, 0.0f);
-    dirLight.ambient = glm::vec3(0.1f, 0.1f, 0.1f);
+    dirLight.ambient = glm::vec3(0.5f, 0.5f, 0.5f);
     dirLight.diffuse = glm::vec3(0.2f, 0.2f, 0.2f);
     dirLight.specular = glm::vec3(0.6f, 0.6f, 0.6f);
 
