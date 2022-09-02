@@ -40,7 +40,7 @@ struct SpotLight {
 in VS_OUT {
     vec3 Normal;
     vec2 TexCoord;
-    vec4 FragPos;
+    vec3 FragPos;
 } fs_in;
 
 uniform vec3 viewPos;
@@ -63,12 +63,12 @@ void main()
 {
     vec3 result;
     vec3 normal = normalize(fs_in.Normal);
-    vec3 viewDir = normalize(viewPos - fs_in.FragPos.xyz);
+    vec3 viewDir = normalize(viewPos - fs_in.FragPos);
     result = calcDirLight(dirLight, normal, viewDir);
     //for(int i =  0; i < 3; ++i) {
     //      result+= calcPointLight(pointLights[i],normal,fs_in.FragPos.xyz,viewDir);
    // }
-   result += calcSpotLight(spotLight, normal, fs_in.FragPos.xyz, viewDir);
+   result += calcSpotLight(spotLight, normal, fs_in.FragPos, viewDir);
 
     FragColor = vec4(result,1.0);
 }

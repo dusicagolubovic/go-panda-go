@@ -323,15 +323,12 @@ int main() {
     /* Pravimo kolekciju prepreka i poena*/
 
     Cube* initialBrick = new Cube(false);
-    Cube* initialPoint = new Cube(initialBrick->getXCoord(), false);
+    Cube* initialPoint = new Cube(initialBrick->getXCoord(), true);
     cubes.push_back(initialBrick);
     cubes.push_back(initialPoint);
 
 
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-    // render loop
+       // render loop
     // -----------
     while (!glfwWindowShouldClose(window)) {
         // per-frame time logic
@@ -455,7 +452,6 @@ int main() {
 
         glDisable(GL_CULL_FACE);
 
-
         /* Vegetacija */
 
         glBindVertexArray(transparentVAO);
@@ -507,6 +503,7 @@ int main() {
         setUpShaderLights(modelShader);
 
         pandaModel.Draw(modelShader);
+
 
 
 
