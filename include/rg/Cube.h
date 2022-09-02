@@ -21,7 +21,7 @@ float RandomPosition()
     std::default_random_engine generator( std::random_device{}() );
     std::uniform_int_distribution<int> distribution(0,4);
     int index = distribution(generator);
-    std::cerr << index << std::endl;
+    //std::cerr << index << std::endl;
     return positions[index];
 
 }
@@ -37,7 +37,10 @@ public:
     }
 
     Cube(float x, bool isPoint) {
-        m_xCoord = x;
+       float xRand = RandomPosition();
+       while (x == xRand)
+           xRand = RandomPosition();
+       m_xCoord = xRand;
         m_isPoint = isPoint;
 
     }

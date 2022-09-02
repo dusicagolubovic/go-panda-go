@@ -35,6 +35,8 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
 
 void setUpLights();
 
+void resetGame();
+
 void setUpShaderLights(Shader shader);
 
 unsigned int loadTexture(char const* path, bool gammaCorrection);
@@ -103,6 +105,10 @@ std::vector<Cube*> cubes;
 float cubesSpeed = 1.5f;
 
 float xPandaPosition = 0.0f;
+
+bool isGameOver = false;
+
+int score = 0;
 
 int main() {
     // glfw: initialize and configure
@@ -317,7 +323,7 @@ int main() {
     /* Pravimo kolekciju prepreka i poena*/
 
     Cube* initialBrick = new Cube(false);
-    Cube* initialPoint = new Cube(true);
+    Cube* initialPoint = new Cube(initialBrick->getXCoord(), false);
     cubes.push_back(initialBrick);
     cubes.push_back(initialPoint);
 
@@ -412,9 +418,29 @@ int main() {
                 nearestZ = zPosition;
             }
 
-            if(zPosition  >= 0.9f){
+            if((zNewPosition  >= 0.9f && !(*it)->isPoint()) || (zNewPosition  >= 1.0f && (*it)->isPoint()) ){
                 delete *it;
                 it = cubes.erase(it);
+                continue;
+            }
+
+            /* Detekcija kolizije */
+
+            // naisli na prepreku
+            if(zNewPosition >= 0.6 && xPandaPosition == xPosition && !(*it)->isPoint()){
+                cubes.clear();
+                isGameOver = true;
+                // TODO provera za highscore, u program stateu, imgui ispisan
+                score = 0;
+                break;
+            }
+
+            // naisli na poen
+            if(zNewPosition >= 0.65 && xPandaPosition == xPosition && (*it)->isPoint()){
+                delete *it;
+                it = cubes.erase(it);
+                score++;
+                std::cerr << "Score" << score <<std::endl;
                 continue;
             }
 
@@ -459,17 +485,17 @@ int main() {
             }
         }
 
-        if(nearestZ > -5.0f) {
+        if(nearestZ > -5.0f && !isGameOver) {
             Cube* newCube = new Cube(false);
             cubes.push_back(newCube);
-            Cube* newPointCube = new Cube(true);
+            Cube* newPointCube = new Cube(newCube->getXCoord(), true);
             cubes.push_back(newPointCube);
         }
 
         /* Renderovanje modela */
         modelShader.use();
         glm::mat4 model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(xPandaPosition, 0.6f, 0.9f));
+        model = glm::translate(model, glm::vec3(xPandaPosition, 0.6f, 0.7f));
         model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
         model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 
@@ -504,6 +530,10 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
     if(key == GLFW_KEY_RIGHT && action == GLFW_PRESS && xPandaPosition < 0.75f){
         xPandaPosition += 0.25f;
     }
+
+    if(key == GLFW_KEY_R && action == GLFW_PRESS){
+        resetGame();
+    }
 }
 
 // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
@@ -535,6 +565,13 @@ void mouse_callback(GLFWwindow *window, double xpos, double ypos) {
 
     lastX = xpos;
     lastY = ypos;
+}
+
+
+void resetGame(){
+    cubes.clear();
+    isGameOver = false;
+    score = 0;
 }
 
 void setUpLights(){
