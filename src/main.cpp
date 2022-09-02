@@ -98,6 +98,7 @@ struct PointLight {
 
 DirLight dirLight;
 SpotLight spotLight;
+int numOfPointLights = 3;
 std::vector<PointLight> pointLights;
 
 std::vector<Cube*> cubes;
@@ -145,13 +146,12 @@ int main() {
     /*Shaderi */
 
     Shader baseShader("resources/shaders/base.vs", "resources/shaders/base.fs");
-    Shader lightShader ("resources/shaders/light.vs","resources/shaders/light.fs");
-  //  Shader pointShader("resources/shaders/light.vs","resources/shaders/point.fs");
     Shader cubeShader ("resources/shaders/cube.vs","resources/shaders/cube.fs");
     Shader blendShader ("resources/shaders/blending.vs","resources/shaders/blending.fs");
     Shader modelShader ("resources/shaders/model.vs","resources/shaders/model.fs");
 
     /*Modeli*/
+
     Model pandaModel("resources/objects/panda/scene.gltf");
 
     float planeVertices[] = {
@@ -221,15 +221,6 @@ int main() {
             -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  1.0f
     };
 
-    glm::vec3 pointLightPositions[] = {
-            glm::vec3(0.7f,5.9f,-8.0f),
-            glm::vec3(0.5f,10.7f,-4.0f),
-            glm::vec3(1.0f,18.8f,-1.0f)
-           // glm::vec3(0.0f,7.0f,-4.0f),
-           // glm::vec3 (1.0f, 6.0f, -4.0f )
-
-
-    };
 
     float transparentVertices[] = {
             // positions         // texture Coords (swapped y coordinates because texture is flipped upside down)
@@ -366,20 +357,6 @@ int main() {
             glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         }
 
-        /* Point svetlo */
-        lightShader.use();
-        lightShader.setMat4("projection", projection);
-        lightShader.setMat4("view", view);
-
-        glBindVertexArray(lightCubeVAO);
-
-        for (unsigned int i = 0; i < 2; i++) {
-            glm::mat4 model = glm::mat4(1.0f);
-            model = glm::translate(model, pointLightPositions[i]);
-            model = glm::scale(model, glm::vec3(0.2f));
-            lightShader.setMat4("model",model);
-            glDrawArrays(GL_TRIANGLES,0,36);
-        }
 
         glBindVertexArray(cubeVAO);
 
@@ -574,33 +551,29 @@ void resetGame(){
 void setUpLights(){
 
     glm::vec3 pointLightPositions[] = {
-            glm::vec3(0.7f,5.9f,-8.0f),
-            glm::vec3(0.5f,10.7f,-4.0f),
-            glm::vec3(1.0f,18.8f,-1.0f)
-            //glm::vec3(1.0f,8.8f,-1.0f)
-           // glm::vec3(0.0f,7.0f,-4.0f),
-           // glm::vec3 (1.0f, 6.0f, -4.0f )
-
+            glm::vec3(0.0f,8.0f,-8.0f),
+            glm::vec3(0.0f,8.0f,-4.0f),
+            glm::vec3(0.0f,8.0f,0.0f)
 
     };
 
-    spotLight.position = glm::vec3(0.0f,1.0f,9.0f);
+    spotLight.position = glm::vec3(0.0f,1.5f,1.5f);
     spotLight.direction = glm::vec3(0.2f, 0.7f, -3.0f);
     spotLight.ambient = glm::vec3( 0.08f, 0.08f, 0.08f);
-    spotLight.diffuse = glm::vec3(1.0f, 1.0f, 1.0f);
-    spotLight.specular = glm::vec3(1.0f, 1.0f, 1.0f);
+    spotLight.diffuse = glm::vec3(0.2f, 0.2f, 0.2f);
+    spotLight.specular = glm::vec3(0.5f, 0.5f, 0.5f);
     spotLight.constant = 1.0f;
     spotLight.linear = 0.09;
     spotLight.quadratic = 0.032;
     spotLight.cutOff = glm::cos(glm::radians(15.0f));
     spotLight.outerCutOff = glm::cos(glm::radians(30.0f));
 
-    for (int i = 0; i < 3; ++i) {
+    for (int i = 0; i < numOfPointLights; ++i) {
         PointLight pointLight;
         pointLight.position =pointLightPositions[i];
         pointLight.ambient = glm::vec3(0.05f,0.05f,0.05f);
-        pointLight.diffuse = glm::vec3(0.8f,0.8f,0.8f);
-        pointLight.specular = glm::vec3(1.0f,1.0f,1.0f);
+        pointLight.diffuse = glm::vec3(0.2f,0.2f,0.2f);
+        pointLight.specular = glm::vec3(0.5f,0.5f,0.5f);
         pointLight.constant = 1.0f;
         pointLight.linear = 0.09f;
         pointLight.quadratic = 0.032f;
@@ -609,14 +582,17 @@ void setUpLights(){
         pointLights.push_back(pointLight);
     }
 
-    dirLight.direction = glm::vec3(0.0f, -10.0f, 0.0f);
+    dirLight.direction = glm::vec3(0.0f, -1.0f, 0.0f);
     dirLight.ambient = glm::vec3(0.5f, 0.5f, 0.5f);
-    dirLight.diffuse = glm::vec3(0.2f, 0.2f, 0.2f);
-    dirLight.specular = glm::vec3(0.6f, 0.6f, 0.6f);
+    dirLight.diffuse = glm::vec3(0.6f, 0.6f, 0.6f);
+    dirLight.specular = glm::vec3(0.2f, 0.2f, 0.2f);
 
 }
 
 void setUpShaderLights(Shader shader){
+
+    shader.setInt("numOfPointLights",numOfPointLights);
+
     shader.setVec3("dirLight.direction", dirLight.direction);
     shader.setVec3("dirLight.ambient", dirLight.ambient);
     shader.setVec3("dirLight.diffuse", dirLight.diffuse);
@@ -633,7 +609,7 @@ void setUpShaderLights(Shader shader){
     shader.setFloat("spotLight.cutOff", spotLight.cutOff);
     shader.setFloat("spotLight.outerCutOff", spotLight.outerCutOff);
 
-    for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < numOfPointLights; i++) {
         shader.setVec3("pointLights[" + std::to_string(i) + "]" + ".position", pointLights[i].position);
         shader.setVec3("pointLights[" + std::to_string(i) + "]" + ".ambient", pointLights[i].ambient);
         shader.setVec3("pointLights[" + std::to_string(i) + "]" + ".diffuse", pointLights[i].diffuse);

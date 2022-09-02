@@ -48,6 +48,8 @@ uniform vec3 viewPos;
 uniform sampler2D planeTexture;
 uniform SpotLight spotLight;
 uniform DirLight dirLight;
+uniform int numOfPointLights;
+
 uniform PointLight pointLights[3];
 
 out vec4 FragColor;

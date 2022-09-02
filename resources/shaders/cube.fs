@@ -46,6 +46,7 @@ in VS_OUT {
 uniform vec3 viewPos;
 uniform SpotLight spotLight;
 uniform DirLight dirLight;
+uniform int numOfPointLights;
 uniform PointLight pointLights[3];
 
 uniform sampler2D cubeTexture;
@@ -65,9 +66,9 @@ void main()
     vec3 normal = normalize(fs_in.Normal);
     vec3 viewDir = normalize(viewPos - fs_in.FragPos);
     result = calcDirLight(dirLight, normal, viewDir);
-    //for(int i =  0; i < 3; ++i) {
-    //      result+= calcPointLight(pointLights[i],normal,fs_in.FragPos.xyz,viewDir);
-   // }
+    for(int i =  0; i < numOfPointLights; ++i) {
+          result+= calcPointLight(pointLights[i],normal,fs_in.FragPos.xyz,viewDir);
+    }
    result += calcSpotLight(spotLight, normal, fs_in.FragPos, viewDir);
 
     FragColor = vec4(result,1.0);

@@ -43,6 +43,7 @@ in VS_OUT {
 } fs_in;
 
 uniform vec3 viewPos;
+uniform int numOfPointLights;
 uniform SpotLight spotLight;
 uniform DirLight dirLight;
 uniform PointLight pointLights[3];
@@ -62,7 +63,7 @@ void main()
        vec3 viewDir = normalize(viewPos - fs_in.FragPos);
 
        vec3 result = calcDirLight(dirLight, normal, viewDir);
-         for(int i =  0; i < 3; ++i) {
+         for(int i =  0; i < numOfPointLights; ++i) {
              result+= calcPointLight(pointLights[i],normal,fs_in.FragPos,viewDir);
            }
        result += calcSpotLight(spotLight, normal, fs_in.FragPos, viewDir);
