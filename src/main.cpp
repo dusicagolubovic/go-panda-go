@@ -37,6 +37,8 @@ void setUpLights();
 
 void resetGame();
 
+unsigned int loadCubemap(std::vector<std::string> faces);
+
 void setUpShaderLights(Shader shader);
 
 unsigned int loadTexture(char const* path, bool gammaCorrection);
@@ -149,6 +151,7 @@ int main() {
     Shader cubeShader ("resources/shaders/cube.vs","resources/shaders/cube.fs");
     Shader blendShader ("resources/shaders/blending.vs","resources/shaders/blending.fs");
     Shader modelShader ("resources/shaders/model.vs","resources/shaders/model.fs");
+    Shader skyboxShader("resources/shaders/skybox.vs","resources/shaders/skybox.fs");
 
     /*Modeli*/
 
@@ -233,6 +236,51 @@ int main() {
             1.0f,  0.5f,  0.0f,  1.0f,  0.0f
     };
 
+    float skyboxVertices[] = {
+            // positions
+            -1.0f,  1.0f, -1.0f,
+            -1.0f, -1.0f, -1.0f,
+            1.0f, -1.0f, -1.0f,
+            1.0f, -1.0f, -1.0f,
+            1.0f,  1.0f, -1.0f,
+            -1.0f,  1.0f, -1.0f,
+
+            -1.0f, -1.0f,  1.0f,
+            -1.0f, -1.0f, -1.0f,
+            -1.0f,  1.0f, -1.0f,
+            -1.0f,  1.0f, -1.0f,
+            -1.0f,  1.0f,  1.0f,
+            -1.0f, -1.0f,  1.0f,
+
+            1.0f, -1.0f, -1.0f,
+            1.0f, -1.0f,  1.0f,
+            1.0f,  1.0f,  1.0f,
+            1.0f,  1.0f,  1.0f,
+            1.0f,  1.0f, -1.0f,
+            1.0f, -1.0f, -1.0f,
+
+            -1.0f, -1.0f,  1.0f,
+            -1.0f,  1.0f,  1.0f,
+            1.0f,  1.0f,  1.0f,
+            1.0f,  1.0f,  1.0f,
+            1.0f, -1.0f,  1.0f,
+            -1.0f, -1.0f,  1.0f,
+
+            -1.0f,  1.0f, -1.0f,
+            1.0f,  1.0f, -1.0f,
+            1.0f,  1.0f,  1.0f,
+            1.0f,  1.0f,  1.0f,
+            -1.0f,  1.0f,  1.0f,
+            -1.0f,  1.0f, -1.0f,
+
+            -1.0f, -1.0f, -1.0f,
+            -1.0f, -1.0f,  1.0f,
+            1.0f, -1.0f, -1.0f,
+            1.0f, -1.0f, -1.0f,
+            -1.0f, -1.0f,  1.0f,
+            1.0f, -1.0f,  1.0f
+    };
+
     /*Saljemo podatke o vertexima na graficku */
     unsigned int planeVAO, planeVBO, planeEBO;
 
@@ -302,6 +350,25 @@ int main() {
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
     glBindVertexArray(0);
 
+    unsigned int skyboxVAO, skyboxVBO;
+    glGenVertexArrays(1, &skyboxVAO);
+    glGenBuffers(1, &skyboxVBO);
+    glBindVertexArray(skyboxVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, skyboxVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(skyboxVertices), &skyboxVertices, GL_STATIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+
+    std::vector<std::string> faces
+            {
+                    "resources/textures/skybox/right.jpg",
+                    "resources/textures/skybox/left.jpg",
+                   "resources/textures/skybox/top.jpg",
+                    "resources/textures/skybox/bottom.jpg",
+                    "resources/textures/skybox/front.jpg",
+                    "resources/textures/skybox/back.jpg"
+            };
+
     /* Generisanje teksture */
 
     //stbi_set_flip_vertically_on_load(true);
@@ -310,6 +377,7 @@ int main() {
     unsigned int cubeTexture = loadTexture("resources/textures/brick.jpg",false);
     unsigned int vegetationTexture = loadTexture("resources/textures/grass.png",false);
     unsigned int goldTexture = loadTexture("resources/textures/gold.jpg",false);
+    unsigned int cubemapTexture = loadCubemap(faces);
 
     /* Pravimo kolekciju prepreka i poena*/
 
@@ -317,6 +385,9 @@ int main() {
     Cube* initialPoint = new Cube(initialBrick->getXCoord(), true);
     cubes.push_back(initialBrick);
     cubes.push_back(initialPoint);
+
+    skyboxShader.use();
+    skyboxShader.setInt("skybox", 0);
 
 
        // render loop
@@ -482,6 +553,19 @@ int main() {
         pandaModel.Draw(modelShader);
 
 
+        glDepthMask(GL_FALSE);
+        glDepthFunc(GL_LEQUAL);
+        skyboxShader.use();
+        //eliminisemo translaciju da bi kocka izgledala beskonacno daleko
+        skyboxShader.setMat4("view",glm::mat4(glm::mat3(view)));
+
+        skyboxShader.setMat4("projection",projection);
+        glBindVertexArray(skyboxVAO);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
+        glDrawArrays(GL_TRIANGLES,0,36);
+        glDepthMask(GL_TRUE);
+        glDepthFunc(GL_LESS);
 
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
@@ -671,4 +755,50 @@ unsigned int loadTexture(char const* path, bool gammaCorrection)
     }
 
     return textureID;
+}
+
+// order:
+// +X (right)
+// -X (left)
+// +Y (top)
+// -Y (bottom)
+// +Z (front)
+// -Z (back)
+// -------------------------------------------------------
+unsigned int loadCubemap(std::vector<std::string> faces) {
+    unsigned int textureID;
+    glGenTextures(1, &textureID);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
+
+    // za svaku od 6 strana
+    //ucitavamo
+    //nakacimo
+    //podesimo parametre
+    int width,height,nrChannels;
+    unsigned char* data;
+
+    for (int i = 0; i < faces.size(); ++i) {
+        data = stbi_load(faces[i].c_str(),&width,&height,&nrChannels, 0);
+        if (data) {
+            //podesavamo parametre
+            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X +i,0,GL_RGB,width,height,0,GL_RGB,GL_UNSIGNED_BYTE,data);
+            //filtriranje
+
+        } else {
+            std::cerr << "Failed to load cube map texture" << std::endl;
+            return -1;
+        }
+
+        stbi_image_free(data);
+    }
+
+    //podesavamo parametre za cubemap
+    glTexParameteri(GL_TEXTURE_CUBE_MAP,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP,GL_TEXTURE_WRAP_S,GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP,GL_TEXTURE_WRAP_T,GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP,GL_TEXTURE_WRAP_R,GL_CLAMP_TO_EDGE); //semplujemo kocku 3d, pa nam treba i za r
+
+    return textureID;
+
 }
