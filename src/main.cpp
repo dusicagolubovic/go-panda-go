@@ -410,7 +410,7 @@ int main() {
             }
 
             // naisli na poen
-            if(zNewPosition >= 0.65 && xPandaPosition == xPosition && (*it)->isPoint()){
+            if(zNewPosition >= 0.65 && xPandaPosition == xPosition  && (*it)->isPoint()){
                 delete *it;
                 it = cubes.erase(it);
                 score++;

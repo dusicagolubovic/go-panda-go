@@ -17,9 +17,9 @@
 
 float RandomPosition()
 {
-    float positions[] = {-0.5, -0.25, 0.0, 0.25, 0.5};
+    float positions[] = {-0.5,0.0, 0.5};
     std::default_random_engine generator( std::random_device{}() );
-    std::uniform_int_distribution<int> distribution(0,4);
+    std::uniform_int_distribution<int> distribution(0,2);
     int index = distribution(generator);
     //std::cerr << index << std::endl;
     return positions[index];
@@ -65,7 +65,10 @@ public:
         float scaleFactor = isPoint() ? 0.1f: 0.3f;
         glm::mat4 model = glm::mat4(1.0f);
 
-        model = glm::translate(model,glm::vec3(x,y,z));
+        float step = m_xCoord == 0.5 ? -0.05 : 0.05;
+        model = isPoint() ? glm::translate(model,glm::vec3(x+step,y,z)) : glm::translate(model,glm::vec3(x,y,z));
+
+
 
         model = glm::scale(model, glm::vec3(scaleFactor));
 
