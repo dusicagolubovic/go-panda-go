@@ -390,14 +390,6 @@ int main() {
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6*sizeof(float)));
     glEnableVertexAttribArray(2);
 
-    unsigned int lightCubeVAO;
-    glGenVertexArrays(1,&lightCubeVAO);
-
-    glBindVertexArray(lightCubeVAO);
-    glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
-
-    glVertexAttribPointer(0,3,GL_FLOAT,GL_FALSE, 8*sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
 
     unsigned int transparentVAO, transparentVBO;
     glGenVertexArrays(1, &transparentVAO);
@@ -432,12 +424,11 @@ int main() {
 
     /* Generisanje teksture */
 
-    //stbi_set_flip_vertically_on_load(true);
+
 
     unsigned int planeTexture = loadTexture("resources/textures/grass2.jpg",true);
     unsigned int cubeTexture = loadTexture("resources/textures/brick.jpg",false);
     unsigned int vegetationTexture = loadTexture("resources/textures/grass.png",false);
-   // unsigned int goldTexture = loadTexture("resources/textures/gold.jpg",false);
     unsigned int cubemapTexture = loadCubemap(faces);
 
 
@@ -509,13 +500,11 @@ int main() {
         cubeShader.setMat4("projection", projection);
         cubeShader.setMat4("view", view);
         cubeShader.setInt("cubeTexture", 0);
-     //   cubeShader.setInt("goldTexture",1);
+
 
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, cubeTexture);
 
-    //    glActiveTexture(GL_TEXTURE1);
-     //   glBindTexture(GL_TEXTURE_2D, goldTexture);
 
         setUpShaderLights(cubeShader);
 
@@ -559,7 +548,7 @@ int main() {
                 delete *it;
                 it = cubes.erase(it);
                 score++;
-                std::cerr << "Score" << score <<std::endl;
+                std::cerr << "Score " << score <<std::endl;
                 continue;
             }
 
@@ -611,6 +600,7 @@ int main() {
         }
 
         /* Renderovanje modela */
+
         modelShader.use();
         glm::mat4 model = glm::mat4(1.0f);
         model = glm::translate(model, glm::vec3(xPandaPosition, 0.6f, 0.7f));
@@ -629,21 +619,26 @@ int main() {
 
         glDepthMask(GL_FALSE);
         glDepthFunc(GL_LEQUAL);
+
         skyboxShader.use();
+
         //eliminisemo translaciju da bi kocka izgledala beskonacno daleko
         skyboxShader.setMat4("view",glm::mat4(glm::mat3(view)));
 
         skyboxShader.setMat4("projection",projection);
+
         glBindVertexArray(skyboxVAO);
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
         glDrawArrays(GL_TRIANGLES,0,36);
+
         glDepthMask(GL_TRUE);
         glDepthFunc(GL_LESS);
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-        /*2. Blurujemo bright fragmente */
+        /* 2. Blurujemo bright fragmente */
+
         bool horizontal = true, first_iteration = true;
         unsigned int amount = 50;
         blurShader.use();
@@ -660,6 +655,9 @@ int main() {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        /* 3. Spajamo sve */
+
         finalShader.use();
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, colorBuffers[0]);
@@ -696,15 +694,13 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
     }
 
     //TODO staviti u imgui
-    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS && !bloomKeyPressed)
+    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
     {
         bloom = !bloom;
+        std::cerr << bloom << std::endl;
         bloomKeyPressed = true;
     }
-    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_RELEASE)
-    {
-        bloomKeyPressed = false;
-    }
+
 
     if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
     {
@@ -883,32 +879,21 @@ unsigned int loadTexture(char const* path, bool gammaCorrection)
     return textureID;
 }
 
-// order:
-// +X (right)
-// -X (left)
-// +Y (top)
-// -Y (bottom)
-// +Z (front)
-// -Z (back)
-// -------------------------------------------------------
+/* ucitavanje skyboxa */
 unsigned int loadCubemap(std::vector<std::string> faces) {
     unsigned int textureID;
     glGenTextures(1, &textureID);
     glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
 
-    // za svaku od 6 strana
-    //ucitavamo
-    //nakacimo
-    //podesimo parametre
     int width,height,nrChannels;
     unsigned char* data;
 
     for (int i = 0; i < faces.size(); ++i) {
         data = stbi_load(faces[i].c_str(),&width,&height,&nrChannels, 0);
         if (data) {
-            //podesavamo parametre
+
             glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X +i,0,GL_RGB,width,height,0,GL_RGB,GL_UNSIGNED_BYTE,data);
-            //filtriranje
+
 
         } else {
             std::cerr << "Failed to load cube map texture" << std::endl;
@@ -923,7 +908,7 @@ unsigned int loadCubemap(std::vector<std::string> faces) {
     glTexParameteri(GL_TEXTURE_CUBE_MAP,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
     glTexParameteri(GL_TEXTURE_CUBE_MAP,GL_TEXTURE_WRAP_S,GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_CUBE_MAP,GL_TEXTURE_WRAP_T,GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP,GL_TEXTURE_WRAP_R,GL_CLAMP_TO_EDGE); //semplujemo kocku 3d, pa nam treba i za r
+    glTexParameteri(GL_TEXTURE_CUBE_MAP,GL_TEXTURE_WRAP_R,GL_CLAMP_TO_EDGE);
 
     return textureID;
 

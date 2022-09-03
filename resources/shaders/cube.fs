@@ -89,7 +89,7 @@ void main()
 
 vec3 calcDirLight(DirLight light, vec3 normal, vec3 viewDir)
 {
-    // /*isPoint ? texture(goldTexture, fs_in.TexCoord):*/
+
     vec4 texColor =  texture(cubeTexture, fs_in.TexCoord);
     // smer padanja svetlosti
     vec3 lightDir = normalize(-light.direction);
