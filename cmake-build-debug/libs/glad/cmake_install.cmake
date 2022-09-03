@@ -1,4 +1,4 @@
-# Install script for directory: /home/dusica/Desktop/racunarska-grafika-projekat/libs/glad
+# Install script for directory: /home/dusica/Desktop/rg-proj/libs/glad
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)

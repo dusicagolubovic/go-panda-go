@@ -80,28 +80,28 @@
 				{
 					"directoryIndex" : 0,
 					"id" : "STB_IMAGE::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-STB_IMAGE-Debug-42a1887fb02f8e2897f9.json",
+					"jsonFile" : "target-STB_IMAGE-Debug-99722cc7ff06f0e94e4a.json",
 					"name" : "STB_IMAGE",
 					"projectIndex" : 0
 				},
 				{
 					"directoryIndex" : 1,
 					"id" : "glad::@394eb3637a8e70cb7dd5",
-					"jsonFile" : "target-glad-Debug-acc514c67fb1bb126d82.json",
+					"jsonFile" : "target-glad-Debug-8ebdf0d21a3ac5c3b5f7.json",
 					"name" : "glad",
 					"projectIndex" : 0
 				},
 				{
 					"directoryIndex" : 2,
 					"id" : "imgui::@8273e96cb584335637bd",
-					"jsonFile" : "target-imgui-Debug-d49087dc6981088f9ea5.json",
+					"jsonFile" : "target-imgui-Debug-5158dc5f50eec80be03b.json",
 					"name" : "imgui",
 					"projectIndex" : 0
 				},
 				{
 					"directoryIndex" : 0,
 					"id" : "project_base::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-project_base-Debug-a08c0df18fc9dbf1372b.json",
+					"jsonFile" : "target-project_base-Debug-d890b81449ba3eb0d7ef.json",
 					"name" : "project_base",
 					"projectIndex" : 0
 				}
@@ -111,8 +111,8 @@
 	"kind" : "codemodel",
 	"paths" : 
 	{
-		"build" : "/home/dusica/Desktop/racunarska-grafika-projekat/cmake-build-debug",
-		"source" : "/home/dusica/Desktop/racunarska-grafika-projekat"
+		"build" : "/home/dusica/Desktop/rg-proj/cmake-build-debug",
+		"source" : "/home/dusica/Desktop/rg-proj"
 	},
 	"version" : 
 	{

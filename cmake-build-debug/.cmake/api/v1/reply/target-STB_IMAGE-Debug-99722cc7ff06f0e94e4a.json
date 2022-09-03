@@ -62,11 +62,11 @@
 			[
 				{
 					"backtrace" : 2,
-					"path" : "/home/dusica/Desktop/racunarska-grafika-projekat/cmake-build-debug/configuration"
+					"path" : "/home/dusica/Desktop/rg-proj/cmake-build-debug/configuration"
 				},
 				{
 					"backtrace" : 3,
-					"path" : "/home/dusica/Desktop/racunarska-grafika-projekat/include"
+					"path" : "/home/dusica/Desktop/rg-proj/include"
 				}
 			],
 			"language" : "CXX",

@@ -2,7 +2,7 @@
 	"artifacts" : 
 	[
 		{
-			"path" : "/home/dusica/Desktop/racunarska-grafika-projekat/project_base"
+			"path" : "/home/dusica/Desktop/rg-proj/project_base"
 		}
 	],
 	"backtrace" : 1,
@@ -72,19 +72,19 @@
 			[
 				{
 					"backtrace" : 3,
-					"path" : "/home/dusica/Desktop/racunarska-grafika-projekat/cmake-build-debug/configuration"
+					"path" : "/home/dusica/Desktop/rg-proj/cmake-build-debug/configuration"
 				},
 				{
 					"backtrace" : 4,
-					"path" : "/home/dusica/Desktop/racunarska-grafika-projekat/include"
+					"path" : "/home/dusica/Desktop/rg-proj/include"
 				},
 				{
 					"backtrace" : 2,
-					"path" : "/home/dusica/Desktop/racunarska-grafika-projekat/libs/glad/include"
+					"path" : "/home/dusica/Desktop/rg-proj/libs/glad/include"
 				},
 				{
 					"backtrace" : 2,
-					"path" : "/home/dusica/Desktop/racunarska-grafika-projekat/libs/imgui/include"
+					"path" : "/home/dusica/Desktop/rg-proj/libs/imgui/include"
 				}
 			],
 			"language" : "CXX",

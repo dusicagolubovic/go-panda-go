@@ -1,1 +1,1 @@
-const char * logl_root = "/home/dusica/Desktop/racunarska-grafika-projekat";
+const char * logl_root = "/home/dusica/Desktop/rg-proj";
