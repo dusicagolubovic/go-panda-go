@@ -33,7 +33,7 @@ void processInput(GLFWwindow *window);
 
 void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods);
 
-void setUpLights();
+void drawImGui();
 
 void resetGame();
 
@@ -98,24 +98,184 @@ struct PointLight {
 
 };
 
-bool bloom = true;
-bool bloomKeyPressed = false;
-float exposure = 1.0f;
+/* Podesavanja ProgramState-a */
 
-DirLight dirLight;
-SpotLight spotLight;
-int numOfPointLights = 3;
-std::vector<PointLight> pointLights;
+struct ProgramState {
+    bool ImguiEnabled = false;
+    DirLight dirLight;
+    SpotLight spotLight;
+    std::vector<PointLight> pointLights;
+    int numOfPointLights = 3;
 
+    bool bloom = true;
+    bool bloomKeyPressed = false;
+    float exposure = 1.0f;
+    float cubesSpeed = 1.5f;
+    int score = 0;
+    int highScore;
+
+    void setUpLights();
+
+    void SaveToFile(std::string filename);
+    void LoadFromFile(std::string filename);
+
+
+};
+
+void ProgramState::SaveToFile(std::string filename) {
+    std::ofstream out(filename);
+    out << ImguiEnabled << '\n'
+        << dirLight.direction.x << '\n'
+        << dirLight.direction.y << '\n'
+        << dirLight.direction.z << '\n'
+        << dirLight.diffuse.x << '\n'
+        << dirLight.diffuse.y << '\n'
+        << dirLight.diffuse.z << '\n'
+         << dirLight.ambient.x << '\n'
+         << dirLight.ambient.y << '\n'
+         << dirLight.ambient.z << '\n'
+         << dirLight.specular.x << '\n'
+         << dirLight.specular.y << '\n'
+         << dirLight.specular.z << '\n'
+         <<spotLight.position.x << '\n'
+         <<spotLight.position.y << '\n'
+         <<spotLight.position.z << '\n'
+          << spotLight.direction.x << '\n'
+            << spotLight.direction.y << '\n'
+            << spotLight.direction.z << '\n'
+            << spotLight.diffuse.x << '\n'
+            << spotLight.diffuse.y << '\n'
+            << spotLight.diffuse.z << '\n'
+            << spotLight.ambient.x << '\n'
+            << spotLight.ambient.y << '\n'
+            << spotLight.ambient.z << '\n'
+            << spotLight.specular.x << '\n'
+            << spotLight.specular.y << '\n'
+            << spotLight.specular.z << '\n';
+    for (int i = 0; i < numOfPointLights; i++) {
+        out << pointLights[i].position.x << '\n'
+            <<pointLights[i].position.y << '\n'
+            <<pointLights[i].position.z << '\n'
+            << pointLights[i].diffuse.x << '\n'
+            << pointLights[i].diffuse.y << '\n'
+            << pointLights[i].diffuse.z << '\n'
+            << pointLights[i].ambient.x << '\n'
+            << pointLights[i].ambient.y << '\n'
+            << pointLights[i].ambient.z << '\n'
+            << pointLights[i].specular.x << '\n'
+            << pointLights[i].specular.y << '\n'
+            << pointLights[i].specular.z << '\n';
+    }
+    out << bloom << '\n'
+        << exposure << '\n'
+        << cubesSpeed << '\n'
+        << highScore << '\n';
+
+}
+
+void ProgramState::LoadFromFile(std::string filename) {
+    std::ifstream  in(filename);
+    if (in) {
+        in >>  ImguiEnabled
+            >> dirLight.direction.x
+            >> dirLight.direction.y
+            >> dirLight.direction.z
+            >> dirLight.diffuse.x
+            >> dirLight.diffuse.y
+            >> dirLight.diffuse.z
+            >> dirLight.ambient.x
+            >> dirLight.ambient.y
+            >> dirLight.ambient.z
+            >> dirLight.specular.x
+            >> dirLight.specular.y
+            >> dirLight.specular.z
+            >> spotLight.position.x
+            >> spotLight.position.y
+            >> spotLight.position.z
+            >> spotLight.direction.x
+            >> spotLight.direction.y
+            >> spotLight.direction.z
+            >> spotLight.diffuse.x
+            >> spotLight.diffuse.y
+            >> spotLight.diffuse.z
+            >> spotLight.ambient.x
+            >> spotLight.ambient.y
+            >> spotLight.ambient.z
+            >> spotLight.specular.x
+            >> spotLight.specular.y
+            >> spotLight.specular.z ;
+        for (int i = 0; i < numOfPointLights; i++) {
+            in >> pointLights[i].position.x
+                >> pointLights[i].position.y
+                >> pointLights[i].position.z
+                >> pointLights[i].diffuse.x
+                >> pointLights[i].diffuse.y
+                >> pointLights[i].diffuse.z
+                >> pointLights[i].ambient.x
+                >> pointLights[i].ambient.y
+                >> pointLights[i].ambient.z
+                >> pointLights[i].specular.x
+                >> pointLights[i].specular.y
+                >> pointLights[i].specular.z;
+        }
+        in >> bloom
+            >> exposure
+            >> cubesSpeed
+            >> highScore ;
+
+    }
+}
+
+void ProgramState::setUpLights() {
+
+    glm::vec3 pointLightPositions[] = {
+            glm::vec3(0.0f,8.0f,-8.0f),
+            glm::vec3(0.0f,8.0f,-4.0f),
+            glm::vec3(0.0f,8.0f,0.0f)
+
+    };
+
+    spotLight.position = glm::vec3(0.0f,1.5f,1.5f);
+    spotLight.direction = glm::vec3(0.2f, 0.7f, -3.0f);
+    spotLight.ambient = glm::vec3( 0.08f, 0.08f, 0.08f);
+    spotLight.diffuse = glm::vec3(0.2f, 0.2f, 0.2f);
+    spotLight.specular = glm::vec3(0.5f, 0.5f, 0.5f);
+    spotLight.constant = 1.0f;
+    spotLight.linear = 0.09;
+    spotLight.quadratic = 0.032;
+    spotLight.cutOff = glm::cos(glm::radians(15.0f));
+    spotLight.outerCutOff = glm::cos(glm::radians(30.0f));
+
+    for (int i = 0; i < numOfPointLights; ++i) {
+        PointLight pointLight;
+        pointLight.position =pointLightPositions[i];
+        pointLight.ambient = glm::vec3(0.05f,0.05f,0.05f);
+        pointLight.diffuse = glm::vec3(0.2f,0.2f,0.2f);
+        pointLight.specular = glm::vec3(0.5f,0.5f,0.5f);
+        pointLight.constant = 1.0f;
+        pointLight.linear = 0.09f;
+        pointLight.quadratic = 0.032f;
+
+
+        pointLights.push_back(pointLight);
+    }
+
+    dirLight.direction = glm::vec3(0.0f, -1.0f, 0.0f);
+    dirLight.ambient = glm::vec3(0.5f, 0.5f, 0.5f);
+    dirLight.diffuse = glm::vec3(0.6f, 0.6f, 0.6f);
+    dirLight.specular = glm::vec3(0.2f, 0.2f, 0.2f);
+
+}
+
+
+ProgramState* programState;
 std::vector<Cube*> cubes;
 
-float cubesSpeed = 1.5f;
 
 float xPandaPosition = 0.0f;
 
 bool isGameOver = false;
 
-int score = 0;
 
 int main() {
     // glfw: initialize and configure
@@ -147,7 +307,22 @@ int main() {
         return -1;
     }
 
-    setUpLights();
+
+
+    programState = new ProgramState();
+    programState->setUpLights();
+    programState ->LoadFromFile("resources/program_state.txt");
+    if (programState->ImguiEnabled) {
+        glfwSetInputMode(window,GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+    }
+
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO &io = ImGui::GetIO();
+    (void) io;
+
+    ImGui_ImplGlfw_InitForOpenGL(window,true);
+    ImGui_ImplOpenGL3_Init("#version 330 core");
 
     /*Shaderi */
 
@@ -520,7 +695,7 @@ int main() {
             xPosition = (*it)->getXCoord();
             float zPosition = (*it)->getZCoord();
 
-            float zNewPosition = zPosition + deltaTime * cubesSpeed;
+            float zNewPosition = zPosition + deltaTime * programState->cubesSpeed;
 
             if(nearestZ  >= zPosition ) {
                 nearestZ = zPosition;
@@ -538,8 +713,9 @@ int main() {
             if(zNewPosition >= 0.6 && xPandaPosition == xPosition && !(*it)->isPoint()){
                 cubes.clear();
                 isGameOver = true;
-                // TODO provera za highscore, u program stateu, imgui ispisan
-                score = 0;
+                if (programState->highScore < programState->score)
+                    programState->highScore = programState->score;
+                programState->score = 0;
                 break;
             }
 
@@ -547,8 +723,8 @@ int main() {
             if(zNewPosition >= 0.65 && xPandaPosition == xPosition  && (*it)->isPoint()){
                 delete *it;
                 it = cubes.erase(it);
-                score++;
-                std::cerr << "Score " << score <<std::endl;
+                programState->score++;
+                std::cerr << "Score " << programState->score <<std::endl;
                 continue;
             }
 
@@ -663,10 +839,16 @@ int main() {
         glBindTexture(GL_TEXTURE_2D, colorBuffers[0]);
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, pingpongColorbuffers[!horizontal]);
-        finalShader.setInt("bloom", bloom);
-        finalShader.setFloat("exposure", exposure);
+        finalShader.setInt("bloom", programState->bloom);
+        finalShader.setFloat("exposure", programState->exposure);
         renderQuad();
 
+        if(programState->ImguiEnabled){
+            drawImGui();
+            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+        }
+        else
+            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         // -------------------------------------------------------------------------------
@@ -676,6 +858,8 @@ int main() {
 
     // glfw: terminate, clearing all previously allocated GLFW resources.
     // ------------------------------------------------------------------
+    programState->SaveToFile("resources/program_state.txt");
+    cubes.clear();
     glfwTerminate();
     return 0;
 }
@@ -693,26 +877,15 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
         resetGame();
     }
 
-    //TODO staviti u imgui
-    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
-    {
-        bloom = !bloom;
-        std::cerr << bloom << std::endl;
-        bloomKeyPressed = true;
+    if (key == GLFW_KEY_B && action == GLFW_PRESS) {
+        programState->bloom = !programState->bloom;
+    }
+
+    if (key == GLFW_KEY_F5 && action == GLFW_PRESS) {
+        programState->ImguiEnabled = !programState->ImguiEnabled;
     }
 
 
-    if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
-    {
-        if (exposure > 0.0f)
-            exposure -= 0.001f;
-        else
-            exposure = 0.0f;
-    }
-    else if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
-    {
-        exposure += 0.001f;
-    }
 
 }
 
@@ -751,78 +924,39 @@ void mouse_callback(GLFWwindow *window, double xpos, double ypos) {
 void resetGame(){
     cubes.clear();
     isGameOver = false;
-    score = 0;
+    programState->score = 0;
 }
 
-void setUpLights(){
 
-    glm::vec3 pointLightPositions[] = {
-            glm::vec3(0.0f,8.0f,-8.0f),
-            glm::vec3(0.0f,8.0f,-4.0f),
-            glm::vec3(0.0f,8.0f,0.0f)
-
-    };
-
-    spotLight.position = glm::vec3(0.0f,1.5f,1.5f);
-    spotLight.direction = glm::vec3(0.2f, 0.7f, -3.0f);
-    spotLight.ambient = glm::vec3( 0.08f, 0.08f, 0.08f);
-    spotLight.diffuse = glm::vec3(0.2f, 0.2f, 0.2f);
-    spotLight.specular = glm::vec3(0.5f, 0.5f, 0.5f);
-    spotLight.constant = 1.0f;
-    spotLight.linear = 0.09;
-    spotLight.quadratic = 0.032;
-    spotLight.cutOff = glm::cos(glm::radians(15.0f));
-    spotLight.outerCutOff = glm::cos(glm::radians(30.0f));
-
-    for (int i = 0; i < numOfPointLights; ++i) {
-        PointLight pointLight;
-        pointLight.position =pointLightPositions[i];
-        pointLight.ambient = glm::vec3(0.05f,0.05f,0.05f);
-        pointLight.diffuse = glm::vec3(0.2f,0.2f,0.2f);
-        pointLight.specular = glm::vec3(0.5f,0.5f,0.5f);
-        pointLight.constant = 1.0f;
-        pointLight.linear = 0.09f;
-        pointLight.quadratic = 0.032f;
-
-
-        pointLights.push_back(pointLight);
-    }
-
-    dirLight.direction = glm::vec3(0.0f, -1.0f, 0.0f);
-    dirLight.ambient = glm::vec3(0.5f, 0.5f, 0.5f);
-    dirLight.diffuse = glm::vec3(0.6f, 0.6f, 0.6f);
-    dirLight.specular = glm::vec3(0.2f, 0.2f, 0.2f);
-
-}
 
 void setUpShaderLights(Shader shader){
 
-    shader.setInt("numOfPointLights",numOfPointLights);
+    shader.setInt("numOfPointLights",programState->numOfPointLights);
 
-    shader.setVec3("dirLight.direction", dirLight.direction);
-    shader.setVec3("dirLight.ambient", dirLight.ambient);
-    shader.setVec3("dirLight.diffuse", dirLight.diffuse);
-    shader.setVec3("dirLight.specular", dirLight.specular);
+    shader.setVec3("dirLight.direction", programState->dirLight.direction);
+    shader.setVec3("dirLight.ambient", programState->dirLight.ambient);
+    shader.setVec3("dirLight.diffuse",programState-> dirLight.diffuse);
+    shader.setVec3("dirLight.specular", programState->dirLight.specular);
 
-    shader.setVec3("spotLight.position", spotLight.position);
-    shader.setVec3("spotLight.direction", spotLight.direction);
-    shader.setVec3("spotLight.ambient", spotLight.ambient);
-    shader.setVec3("spotLight.diffuse", spotLight.diffuse);
-    shader.setVec3("spotLight.specular", spotLight.specular);
-    shader.setFloat("spotLight.constant", spotLight.constant);
-    shader.setFloat("spotLight.linear", spotLight.linear);
-    shader.setFloat("spotLight.quadratic", spotLight.quadratic);
-    shader.setFloat("spotLight.cutOff", spotLight.cutOff);
-    shader.setFloat("spotLight.outerCutOff", spotLight.outerCutOff);
+    shader.setVec3("spotLight.position", programState->spotLight.position);
+    shader.setVec3("spotLight.direction", programState->spotLight.direction);
+    shader.setVec3("spotLight.ambient", programState->spotLight.ambient);
+    shader.setVec3("spotLight.diffuse", programState->spotLight.diffuse);
+    shader.setVec3("spotLight.specular", programState->spotLight.specular);
+    shader.setFloat("spotLight.constant", programState->spotLight.constant);
+    shader.setFloat("spotLight.linear", programState->spotLight.linear);
+    shader.setFloat("spotLight.quadratic", programState->spotLight.quadratic);
+    shader.setFloat("spotLight.cutOff", programState->spotLight.cutOff);
+    shader.setFloat("spotLight.outerCutOff", programState->spotLight.outerCutOff);
 
-    for (int i = 0; i < numOfPointLights; i++) {
-        shader.setVec3("pointLights[" + std::to_string(i) + "]" + ".position", pointLights[i].position);
-        shader.setVec3("pointLights[" + std::to_string(i) + "]" + ".ambient", pointLights[i].ambient);
-        shader.setVec3("pointLights[" + std::to_string(i) + "]" + ".diffuse", pointLights[i].diffuse);
-        shader.setVec3("pointLights[" + std::to_string(i) + "]" + ".specular", pointLights[i].specular);
-        shader.setFloat("pointLights[" + std::to_string(i) + "]" + ".constant", pointLights[i].constant);
-        shader.setFloat("pointLights[" + std::to_string(i) + "]" + ".linear", pointLights[i].linear);
-        shader.setFloat("pointLights[" + std::to_string(i) + "]" + ".quadratic", pointLights[i].quadratic);
+    for (int i = 0; i < programState->numOfPointLights; i++) {
+        shader.setVec3("pointLights[" + std::to_string(i) + "]" + ".position", programState->pointLights[i].position);
+        shader.setVec3("pointLights[" + std::to_string(i) + "]" + ".ambient", programState->pointLights[i].ambient);
+        shader.setVec3("pointLights[" + std::to_string(i) + "]" + ".diffuse", programState->pointLights[i].diffuse);
+        shader.setVec3("pointLights[" + std::to_string(i) + "]" + ".specular",programState-> pointLights[i].specular);
+        shader.setFloat("pointLights[" + std::to_string(i) + "]" + ".constant", programState->pointLights[i].constant);
+        shader.setFloat("pointLights[" + std::to_string(i) + "]" + ".linear",programState-> pointLights[i].linear);
+        shader.setFloat("pointLights[" + std::to_string(i) + "]" + ".quadratic",programState-> pointLights[i].quadratic);
 
 
 
@@ -941,4 +1075,44 @@ void renderQuad()
     glBindVertexArray(quadVAO);
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
     glBindVertexArray(0);
+}
+
+void drawImGui() {
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplGlfw_NewFrame();
+    ImGui::NewFrame();
+
+    {
+        ImGui::Begin("Settings ");
+        ImGui::DragFloat("Exposure", (float *) &programState->exposure, 0.1, 0.1, 10);
+        ImGui::Checkbox("Enable Bloom", (bool *) &programState->bloom);
+        ImGui::DragFloat("Game level", (float* ) &programState->cubesSpeed,0.1,1.5f,7.0);
+        ImGui::Text("Score: %d", programState->score);
+        ImGui::Text("Highest score: %d", programState->highScore);
+        ImGui::End();
+    }
+    {
+        ImGui::Begin("Direction Light");
+        ImGui::DragFloat3("direction", (float *) &(programState->dirLight.direction));
+        ImGui::DragFloat3("ambient", (float *) &(programState->dirLight.ambient), 0.02, 0.0);
+        ImGui::DragFloat3("diffuse", (float *) &(programState->dirLight.diffuse), 0.02, 0.0);
+        ImGui::DragFloat3("specular", (float *) &(programState->dirLight.specular), 0.02, 0.0);
+        ImGui::End();
+    }
+    {
+        ImGui::Begin("SpotLight");
+        ImGui::DragFloat3("position", (float *) &(programState->spotLight.position));
+        ImGui::DragFloat3("direction", (float *) &(programState->spotLight.direction));
+        ImGui::DragFloat3("ambient", (float *) &(programState->spotLight.ambient), 0.02, 0.0);
+        ImGui::DragFloat3("diffuse", (float *) &(programState->spotLight.diffuse), 0.02, 0.0);
+        ImGui::DragFloat3("specular", (float *) &(programState->spotLight.specular), 0.02, 0.0);
+        ImGui::DragFloat("constant", (float *) &programState->spotLight.constant, 0.02, 0.0);
+        ImGui::DragFloat("linear", (float *) &programState->spotLight.linear, 0.02, 0.0, 1.0);
+        ImGui::DragFloat("quadratic", (float *) &programState->spotLight.quadratic, 0.02, 0.0, 1.0);
+        ImGui::End();
+    }
+
+
+    ImGui::Render();
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
