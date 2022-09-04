@@ -1,13 +1,22 @@
-# project_base
-Prazan projekat sa pratećim bibliotekama koje koristimo na času. 
+# Go, panda, go!
 
-# Uputstvo
-1. `git clone https://github.com/matf-racunarska-grafika/project_base.git`
-2. CLion -> Open -> path/to/my/project_base
-3. Main se nalazi u src/main.cpp
-4. Cpp fajlovi idu u src folder
-5. Zaglavlja (h i hpp) fajlovi idu u include
-6. Šejderi idu u folder shaders. `Vertex shader` ima ekstenziju `.vs`, `fragment shader` ima ekstenziju `.fs`
-7. ALT+SHIFT+F10 -> project_base -> run
+Uproscena implementacija endless runnera koristeci OpenGl.
+Fakultetski projekat u okviru kursa Racunarska grafika na Matematickom fakultetu, Univerziteta u Beogradu.
 
-:bomb:
+### Uputstvo
+1. `git clone git@github.com:dusicagolubovic/go_panda_go.git`
+2. CLion -> Open -> putanja/do/projekta
+3. ALT+SHIFT+F10 -> project_base -> run
+
+### Implementirane oblasti
+1. Osnovne obavezne oblasti :heavy_check_mark:
+2. Skybox preko Cubemap :heavy_check_mark: 
+3. HDR\Bloom :heavy_check_mark: 
+
+### Komande igrice
+1. :arrow_left: :arrow_right: Pomeranje pande po sceni
+2. F5 Podesavanja igrice (Osvetljenje, efekti blura, Nivo igrice ..)
+3.  R restart igrice
+
+### Demo sminak 
+TODO
