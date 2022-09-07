@@ -19,4 +19,4 @@ Fakultetski projekat u okviru kursa Racunarska grafika na Matematickom fakultetu
 3.  R restart igrice
 
 ### Demo sminak 
-TODO
+https://www.youtube.com/watch?v=rXbJB_NoBgg
